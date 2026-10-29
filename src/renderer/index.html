@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'none'">
+  <title>Kalkulator czynszu – automaty vendingowe w szkołach</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="4" y="2.5" width="16" height="19" rx="2"/>
+          <path d="M7 6h7M7 9.5h7M7 13h7"/>
+          <path d="M17 6v3"/>
+          <path d="M7 18h10"/>
+        </svg>
+      </span>
+      <div>
+        <h1>Kalkulator czynszu</h1>
+        <p>Automaty vendingowe w szkołach · stawki netto</p>
+      </div>
+    </div>
+    <nav class="tabs" role="tablist">
+      <button class="tab active" role="tab" data-view="calc">Kalkulator</button>
+      <button class="tab" role="tab" data-view="table">Tabela stawek</button>
+      <button class="tab" role="tab" data-view="assumptions">Założenia</button>
+      <button class="tab" role="tab" data-view="sources">Źródła</button>
+    </nav>
+  </header>
+
+  <main>
+    <!-- KALKULATOR -->
+    <section class="view active" id="view-calc">
+      <div class="calc-grid">
+        <div class="card inputs">
+          <h2>Dane szkoły</h2>
+
+          <label class="field">
+            <span class="field-label">Liczba uczniów</span>
+            <input id="students" class="big-input" type="number" min="0" max="10000" step="10" inputmode="numeric">
+            <input id="students-range" type="range" min="0" max="2500" step="10" aria-label="Liczba uczniów – suwak">
+          </label>
+
+          <label class="field">
+            <span class="field-label">Typ szkoły</span>
+            <select id="school-type"></select>
+          </label>
+
+          <div class="field">
+            <span class="field-label">Liczba automatów</span>
+            <div class="stepper">
+              <button type="button" id="machines-dec" aria-label="Mniej automatów">−</button>
+              <input id="machines" type="number" min="1" max="20" step="1" inputmode="numeric">
+              <button type="button" id="machines-inc" aria-label="Więcej automatów">+</button>
+            </div>
+          </div>
+
+          <p class="hint">Czynsz łączny dzielony jest na automaty. Kwoty netto – do czynszu dolicza się 23% VAT.</p>
+        </div>
+
+        <div class="results">
+          <div class="card hero">
+            <div class="hero-label">Czynsz miesięczny (netto, wszystkie automaty)</div>
+            <div class="hero-range">
+              <div class="hero-col">
+                <span class="hero-tag">Minimalny</span>
+                <span class="hero-value" id="rent-min">–</span>
+              </div>
+              <span class="hero-dash" aria-hidden="true">–</span>
+              <div class="hero-col">
+                <span class="hero-tag">Maksymalny</span>
+                <span class="hero-value" id="rent-max">–</span>
+              </div>
+            </div>
+            <div class="hero-mid">
+              Stawka wyjściowa do negocjacji / przetargu: <strong id="rent-mid">–</strong>
+            </div>
+            <button type="button" class="btn ghost" id="copy-summary">Kopiuj podsumowanie</button>
+          </div>
+
+          <div class="tiles">
+            <div class="tile"><span class="tile-label">Na 1 automat</span><span class="tile-value" id="t-machine">–</span></div>
+            <div class="tile"><span class="tile-label">Za 1 m² powierzchni</span><span class="tile-value" id="t-m2">–</span></div>
+            <div class="tile"><span class="tile-label">Za rok szkolny</span><span class="tile-value" id="t-year">–</span><span class="tile-sub" id="t-year-sub"></span></div>
+            <div class="tile"><span class="tile-label">Odpowiednik 12 równych rat</span><span class="tile-value" id="t-12">–</span></div>
+            <div class="tile"><span class="tile-label">Ryczałt za energię (osobno)</span><span class="tile-value" id="t-energy">–</span><span class="tile-sub">zł netto / mies.</span></div>
+            <div class="tile"><span class="tile-label">Sugerowana liczba automatów</span><span class="tile-value" id="t-suggest">–</span><span class="status" id="s-suggest"></span></div>
+          </div>
+
+          <div class="card">
+            <div class="row-between">
+              <h3>Udział czynszu w marży operatora</h3>
+              <span class="status" id="s-operator"></span>
+            </div>
+            <div class="meter-row">
+              <span class="meter-tag">MIN</span>
+              <div class="meter"><div class="meter-fill" id="m-min"></div><div class="meter-limit" id="m-limit-1"></div></div>
+              <span class="meter-val" id="mv-min">–</span>
+            </div>
+            <div class="meter-row">
+              <span class="meter-tag">MAX</span>
+              <div class="meter"><div class="meter-fill" id="m-max"></div><div class="meter-limit" id="m-limit-2"></div></div>
+              <span class="meter-val" id="mv-max">–</span>
+            </div>
+            <p class="hint" id="operator-hint"></p>
+          </div>
+
+          <details class="card details">
+            <summary>Szczegóły obliczeń</summary>
+            <table class="data">
+              <thead><tr><th></th><th>Scenariusz MIN</th><th>Scenariusz MAX</th></tr></thead>
+              <tbody id="calc-details"></tbody>
+            </table>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <!-- TABELA -->
+    <section class="view" id="view-table">
+      <div class="card">
+        <div class="row-between">
+          <div>
+            <h2>Tabela stawek wg liczby uczniów</h2>
+            <p class="hint">Liczba automatów = sugerowana dla danej wielkości szkoły. Kwoty netto, zł / miesiąc nauki.</p>
+          </div>
+          <label class="inline-field">Typ szkoły <select id="table-type"></select></label>
+        </div>
+        <table class="data numeric" id="rate-table">
+          <thead>
+            <tr>
+              <th>Liczba uczniów</th><th>Automaty</th><th>Czynsz MIN</th><th>Czynsz MAX</th>
+              <th>Stawka wyjściowa</th><th>MIN / automat</th><th>MAX / automat</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ZAŁOŻENIA -->
+    <section class="view" id="view-assumptions">
+      <div class="card">
+        <div class="row-between">
+          <div>
+            <h2>Założenia modelu</h2>
+            <p class="hint">Zmiany zapisują się automatycznie i od razu przeliczają kalkulator. Zmienione pola są podświetlone.</p>
+          </div>
+          <button type="button" class="btn" id="reset-assumptions">Przywróć domyślne</button>
+        </div>
+        <table class="data assumptions">
+          <thead><tr><th>Parametr</th><th>Min</th><th>Max</th><th>Jedn.</th><th>Uzasadnienie</th><th>Źródła</th></tr></thead>
+          <tbody id="assumptions-body"></tbody>
+        </table>
+      </div>
+      <div class="card">
+        <h3>Współczynniki popytu wg typu szkoły</h3>
+        <p class="hint">Szacunki własne – brak danych źródłowych.</p>
+        <table class="data compact"><tbody id="types-body"></tbody></table>
+      </div>
+    </section>
+
+    <!-- ŹRÓDŁA -->
+    <section class="view" id="view-sources">
+      <div class="card">
+        <h2>Źródła danych</h2>
+        <p class="hint">Stan na 29.10.2026. Strony firm vendingowych to materiały branżowe (mogą być optymistyczne). Linki otwierają się w przeglądarce.</p>
+        <ol class="sources" id="sources-list"></ol>
+      </div>
+      <div class="card">
+        <h3>Założenia bez źródła (szacunki własne)</h3>
+        <ul class="own" id="own-list"></ul>
+        <p class="hint">Najlepsza kalibracja: dane sprzedażowe z własnych automatów lub wylicytowane stawki z przetargów w Twoim regionie (BIP szkół / organu prowadzącego).</p>
+      </div>
+    </section>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="../model.js"></script>
+  <script src="../sources.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,47 @@
+{
+  "name": "vending-czynsz",
+  "productName": "Kalkulator czynszu vending",
+  "version": "1.0.0",
+  "description": "Kalkulator minimalnej i maksymalnej stawki czynszu za automaty vendingowe w szkołach",
+  "main": "src/main.js",
+  "author": "Piotr",
+  "license": "UNLICENSED",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "test": "node --test",
+    "dist": "electron-builder --win --x64",
+    "dist:portable": "electron-builder --win portable --x64"
+  },
+  "build": {
+    "appId": "pl.vendingczynsz.kalkulator",
+    "productName": "Kalkulator czynszu vending",
+    "files": [
+      "src/**/*",
+      "package.json"
+    ],
+    "directories": {
+      "output": "dist"
+    },
+    "win": {
+      "icon": "build/icon.ico",
+      "target": [
+        "nsis",
+        "portable"
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "shortcutName": "Kalkulator czynszu vending"
+    },
+    "portable": {
+      "artifactName": "KalkulatorCzynszuVending-${version}-portable.exe"
+    }
+  },
+  "devDependencies": {
+    "electron": "^45.1.0",
+    "electron-builder": "^26.18.0"
+  }
+}
